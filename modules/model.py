@@ -1,52 +1,8 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 import tensorflow as tf
-from tensorflow	import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import layers
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import Normalizer
-from sklearn.metrics import r2_score
-
-
-def preprocess_data(data, test_size=0.33, random_state=52):
-    """
-    Preprocesses the given dataset by splitting it into training and test sets, and then scaling the features.
-
-    Parameters:
-    - data (DataFrame): The input dataset with features in all columns except the last one, which contains the target variable.
-    - test_size (float, optional): Proportion of the dataset to be used as the test set. Default is 0.33.
-    - random_state (int, optional): The seed used by the random number generator for reproducibility. Default is 52.
-
-    Returns:
-    - X_train_scaled (array): Scaled features for the training set.
-    - X_test_scaled (array): Scaled features for the test set.
-    - y_train (Series): Target variable for the training set.
-    - y_test (Series): Target variable for the test set.
-    """
-
-    # Split Data into X and y
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
-    print("Shape of X: {info}".format(info = X.shape))
-    print("Shape of y: {info}".format(info = y.shape))
-    
-    # Splitting into training, validation, and test sets
-    X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.2, random_state=42)  # 80% train+val, 20% test
-    X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.25, random_state=42)  # Of the 80%, 60% train, 20% val
-    # Scale X dataset
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_val = scaler.transform(X_val)
-    X_test = scaler.transform(X_test)
-
-    return X_train, X_val, X_test, y_train, y_val, y_test
 
 def build_model(data):
     
@@ -138,28 +94,3 @@ def evaluate_model_performance(model, X_test, y_test, verbose=True):
 
     return mse, mae
 
-
-
-
-# Example Usage
-if __name__ == "__main__":
-
-    #Load in the data
-    data = pd.read_csv("/data/admissions_data.csv")
-
-    # Pre process the data
-    X_train, X_val, X_test, y_train, y_val, y_test = preprocess_data(data)
-
-    # Build and train the model
-    model = build_model(X_train)
-    history = train_model(model, X_train, y_train, X_val, y_val, epochs=100, batch_size=16)
-
-    #Optionally, to visualize training history (requires matplotlib)
-    plt.plot(history.history['loss'], label='Training Loss')
-    plt.plot(history.history['val_loss'], label='Validation Loss')
-    plt.legend()
-    plt.show()
-
-
-    # Run prediction on test data and print results
-    mse, mae = evaluate_model_performance(model, X_test, y_test)
